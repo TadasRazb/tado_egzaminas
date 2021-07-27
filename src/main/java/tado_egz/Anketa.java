@@ -23,9 +23,9 @@ public class Anketa {
 	private Integer paslaugosVertinimas;
 	private Integer imonesVertinimas;
 	
-	@OneToMany
+	@ManyToOne
 	@JoinColumn(name = "idAnketos", referencedColumnName = "id",insertable=false, updatable=false) 
-	private List<Klientai_apklausa> klientai_apklausa;
+	private List<KlientaiApklausa> klientaiApklausa;
 		
 	public Anketa() {
 			
@@ -75,12 +75,12 @@ public class Anketa {
 		this.imonesVertinimas = imonesVertinimas;
 	}
 
-	public List<Klientai_apklausa> getKlientai_apklausa() {
-		return klientai_apklausa;
+	public List<KlientaiApklausa> getKlientaiApklausa() {
+		return klientaiApklausa;
 	}
 
-	public void setKlientai_apklausa(List<Klientai_apklausa> klientai_apklausa) {
-		this.klientai_apklausa = klientai_apklausa;
+	public void setKlientai_apklausa(List<KlientaiApklausa> klientaiApklausa) {
+		this.klientaiApklausa = klientaiApklausa;
 	}
 
 	@Override

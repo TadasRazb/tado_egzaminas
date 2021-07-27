@@ -23,7 +23,7 @@ public class Klientai {
   
     @OneToMany
 	@JoinColumn(name = "idKliento", referencedColumnName = "id",insertable=false, updatable=false) 
-	private List<Klientai_apklausa> klientai_apklausa;
+	private List<KlientaiApklausa> klientaiApklausa;
 	
 	public Klientai() {
 		
@@ -82,12 +82,12 @@ public class Klientai {
 		this.telefonoNumeris = telefonoNumeris;
 	}
 
-	public List<Klientai_apklausa> getKlientai_apklausa() {
-		return klientai_apklausa;
+	public List<KlientaiApklausa> getKlientaiApklausa() {
+		return klientaiApklausa;
 	}
 
-	public void setKlientai_apklausa(List<Klientai_apklausa> klientai_apklausa) {
-		this.klientai_apklausa = klientai_apklausa;
+	public void setKlientai_apklausa(List<KlientaiApklausa> klientaiApklausa) {
+		this.klientaiApklausa = klientaiApklausa;
 	}
 
 	@Override
