@@ -37,6 +37,9 @@ public class PageController {
 	@Autowired
 	private AnketaRepository anketa_repository;
 	
+	@Autowired
+	private AnketaRepository KlientaiApklausa_repository;
+	
 	@Autowired 
 	EntityManagerFactory factory;	
 	
@@ -75,13 +78,13 @@ public class PageController {
 		Model model
 		) throws IOException {
 		
-		String url_tpl = "klientai";
+		//String url_tpl = "klientai";
 	
 		System.out.println(send);
 		
 		if ( ( send != null ) && send.equals ("siųsti") ) {
 			rasomIFailaKlientai(id, vardas, pavarde, gimimo_data, telefono_numeris );
-			Klientai klientai = new Klientai ( 
+			Klientai klientas = new Klientai ( 
 			
 					( id.equals("0") ? null : Integer.parseInt (id) )
 					, vardas
@@ -89,15 +92,14 @@ public class PageController {
 					, Integer.parseInt (gimimo_data)
 					, Integer.parseInt (telefono_numeris)
 					);
-			System.out.println(klientai.toString());
-			klientai = klientai_repository.save(klientai);
-			url_tpl = "redirect:klientai?id_anketos=" + klientai.getId();   //? get parametrai ieskomi po klaustuko surasomi parametrai kurie imami is get
+			System.out.println(klientas.toString());
+			klientas = klientai_repository.save(klientas);
+		//	url_tpl = "redirect:klientai?id_anketos=" + klientas.getId();   //? get parametrai ieskomi po klaustuko surasomi parametrai kurie imami is get
 		}
-		Iterable<Klientai> klientai_visi = klientai_repository.findAll();
+		model.addAttribute("klientai", klientai_repository.findAll() );
+		model.addAttribute( "lst_menu", Menu.values() );
 		
-		model.addAttribute ( "klientai_visi", klientai_visi );
-		
-		return url_tpl;
+		return "klientai";
 	}
 	
 	private void rasomIFailaKlientai (

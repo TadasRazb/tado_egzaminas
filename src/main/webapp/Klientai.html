@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Klientų pridėjimo kortelė</title>
+<link rel="stylesheet" href="main.css">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="main.js"></script>
+<script>
+$( function() {
+    var dialog, form,
+     	   
+      vardas = $( "#vardas" ),
+      pavarde = $( "#pavarde" ),
+      gimimo_data = $( "#gimimo_data" ),
+      telefono_numeris = $( "#telefono_numeris" ),
+      allFields = $( [] ).add( vardas ).add( pavarde ).add( gimimo_data ).add ( telefono_numeris ),
+      tips = $( ".validateTips" );
+ 
+    function pridetiKlienta() {
+    
+      var valid = true;
+      allFields.removeClass( "ui-state-error" );
+      
+       	  // id pav flag_skirtas_galutiniam_vartojimui vnt_mato kiekis kaina_uz_kiekio_vnt aprasymas
+      
+      valid = valid && checkLength( tips, vardas, "vardas", 3, 255 );
+      valid = valid && checkLength( tips, pavarde, "pavarde", 3, 255 );
+      valid = valid && checkLength( tips, gimimo_data, "gimimo data", 1, 255 );
+      valid = valid && checkLength( tips, telefono_numeris, "telefono numeris", 1, 255 );           
+ 
+      valid = valid && checkRegexp( tips, vardas, /^[A-ZĄČĘĖĮŠŲŪŽ]([0-9a-ząčęėįšųūž_\s])+$/i, "varde turi būti a-z ąčęėįšųūž, 0-9, pabraukimai, tarpai ir turi prasidėti didžąją raide" );
+      valid = valid && checkRegexp( tips, pavarde, /^[a-ząčęėįšųūžA-ZĄČĘĖĮŠŲŪŽ]([0-9a-ząčęėįšųūž_\s])+$/i, "pavardeje turi būti a-z ąčęėįšųūž, 0-9, pabraukimai, tarpai ir turi prasidėti didžąją raide" );      
+      valid = valid && checkRegexp( tips, gimimo_data, /^([0-9.eE+-])+$/, "Kiekyje gali būti : 0-9 . eE+-" );
+      valid = valid && checkRegexp( telefono_numeris, /^([0-9.])+$/, "Kiekyje gali būti : 0-9 ." );      
+ 
+      if ( valid ) {
+      
+      	form.submit();
+        dialog.dialog( "close" );
+      }
+      return valid;
+    }
+ 
+    dialog = $( "#data_form" ).dialog({
+      autoOpen: false,
+      height: 500,
+      width: 450,
+      modal: true,
+      buttons: {
+        "Saugoti": pridetiKlienta,
+        Cancel: function() {
+          dialog.dialog( "close" );
+        }
+      },
+      close: function() {
+        form[ 0 ].reset();
+        allFields.removeClass( "ui-state-error" );
+      }
+    });
+ 
+    form = dialog.find( "form" );
+ 
+    $( "#kliento-dialogas" ).button().on( "click", function() {
+      dialog.dialog( "open" );
+    });
+    
+    $( ".keisti_klienta" ).each ( function() {
+    
+    	$( this ).click( function() {
+    
+    		id = $( this ).data( 'id' );
+    		
+    		$( '#id' ).val ( id );
+    		
+    		$.ajax({
+		 		 url: '/klientai?id=' + id
+		 
+			}).done( function( klientas ) {
+    		
+	    		$( '#vardas' ).val ( klientas.vardas );
+				$( '#pavarde' ).val( klientas.pavarde ); 
+				$( '#gimimo_data' ).val( klientas.gimimo_data );
+				$( '#telefono_numeris' ).val( klientas.telefono_numeris);		
+	    		
+	    		dialog.dialog( "open" );
+    		});
+    	});
+    });
+    
+     dialog_msg = $( "#dialog-message" ).dialog({
+      autoOpen: false,     
+      modal: true,
+      buttons: {
+        Gerai: function() {
+          $( this ).dialog( "close" );
+          location.reload();
+        }
+      }
+    });
+    
+       dialog_del  = $( "#dialog-confirm" ).dialog({
+   
+	      autoOpen: false,   
+	      resizable: false,
+	      height: "auto",
+	      width: 400,
+	      modal: true,
+	      buttons: {
+	        "Šalinti įrašą": function() {
+	        
+		        $.ajax({
+			 		 url: '/salinti-klienta?id=' + id
+			 
+				}).done( function( data ) {
+				
+					if ( data == "1" ) {
+					
+						$( '#del_res' ).html ( 'nurodytas įrašas pašalintas' );
+						dialog_msg.dialog( "open" );
+						
+					} else {
+
+						$( '#del_res' ).html ( 'įrašo pašalinti nepavyko' );
+						dialog_msg.dialog( "open" );					
+	        		}
+	          		$( this ).dialog( "close" );
+	          	});
+	        },
+	        "Atšaukti": function() {
+	          $( this ).dialog( "close" );
+	        }
+	      }
+	   });    
+    
+    $( '.salinti_klienta' ).each ( function() {
+    
+    	$( this ).click( function() {
+    
+    		id = $( this ).data( 'id' );
+    		
+    		$( '#inf_id' ).html ( id );
+    
+     		$.ajax({
+		 		 url: '/klientai?id=' + id
+		 
+			}).done( function( klientas ) {
+    		
+	    		$( '#inf_vardas' ).html ( klientas.vardas );
+				$( '#inf_pavarde' ).html( klientas.pavarde ); 
+				$( '#inf_gimimo_data' ).html( klientas.gimimo_data );
+				$( '#inf_telefono_numeris' ).html( klientas.telefono_numeris );
+
+	    		dialog_del.dialog( "open" );
+    		});   	
+    	});
+    });
+  });
+</script>
+</head>
+<body>
+<article>
+	<h3>Klientai</h3>
+	<nav>
+		<a th:each="menu_item : ${lst_menu}" th:href="${menu_item.itemurl()}" th:text="${menu_item}"></a>
+	</nav>	
+	<table>
+		<tr th:each="klaida : ${errors}">
+			<td th:text="${klaida}">
+			</td>
+		</tr>
+	</table>	
+	<table>
+		<tr>
+			<th>
+				id
+			</th>
+			<th>
+				Vardas
+			</th>
+			<th>				
+				Pavarde
+			</th>
+			<th>				
+				Gimimo<br>data
+			</th>
+			<th>
+				Telefono<br>numeris
+			</th>
+			<th>
+				Veiksmai<br>
+				<button id="klientai-dialogas">Naujas</button>
+			</th>
+		</tr>
+		<tr th:each="klientas : ${klientai}">
+			<td th:text="${klientas.getId()}"></td>
+			<td th:text="${klientas.getVardas()}"></td>
+			<td th:text="${klientas.getPavarde()}"></td>
+			<td th:text="${klientas.getGimimo_data()}"></td>
+			<td th:text="${klientas.getTelefono_numeris()}"></td>
+			<td>
+				<button class="keisti_klienta ui-button ui-corner-all ui-widget" th:data-id="${klientas.getId()}">Keisti</button>
+				<button class="salinti_klienta ui-button ui-corner-all ui-widget" th:data-id="${klientas.getId()}">Šalinti</button>				
+			</td>									
+		</tr>					
+		</tr>
+	</table>
+	</article>
+	<div id="data_form" title="Kliento duomenys">
+		<p class="validateTips">All form fields are required.</p>	
+		<form action="" method="POST">
+			<fieldset>
+			<label for="vardas">Vardas</label>
+			<input type="text" name="vardas" id="vardas" value="">	
+			
+			<label for="pavarde">Pavarde</label>
+			<input type="text" name="pavarde" id="pavarde" value="kg">			
+			
+			<label for="gimimo_data">Gimimo data</label>	
+			<input type="text" name="gimimo_data" id="gimimo_data" value="1000">
+			
+			<label for="telefono_numeris">telefono_numeris</label> 
+			<input type="text" name="telefono_numeris" id="telefono_numeris" value="100">
+	
+			<input type="hidden" name="id" id="id" value="0">
+				
+			<input type="hidden" name="saugoti" value="saugoti">
+			</fieldset>
+		</form>
+	</div>
+	<div id="dialog-confirm" title="Įrašo šalinimas?">
+  	<p>
+  		<span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+  		<fieldset>
+			<label class="inf">Vardas</label>
+			<span class="inp_field" id="inf_vardas"></span>	
+			
+			<label class="inf">Pavarde</label>
+			<span  class="inp_field" id="inf_vnt_pavarde"></span>			
+			
+			<label class="inf">Gimimo data</label>	
+			<span  class="inp_field" id="inf_gimimo_data"></span>
+			
+			<label class="inf">Telefono numeris</label> 
+			<span  class="inp_field" id="inf_telefono_numeris"></span>
+		</fieldset>
+  		Ar tikrai norite pašalinti šį įrašą nr. <span id="inf_id"></span>?
+  	</p>
+	</div>
+	
+	<div id="dialog-message" title="įrašas paįalintas">
+	  <p>
+	    <span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+	    <span id="del_res"></span>
+	  </p>
+	</div>	
+</body>
+</html>
