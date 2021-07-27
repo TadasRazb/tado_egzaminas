@@ -38,7 +38,7 @@ public class PageController {
 	private AnketaRepository anketa_repository;
 	
 	@Autowired
-	private AnketaRepository KlientaiApklausa_repository;
+	private KlientaiAnketaRepository klientai_anketa_repository;
 	
 	@Autowired 
 	EntityManagerFactory factory;	
@@ -102,6 +102,99 @@ public class PageController {
 		return "klientai";
 	}
 	
+	/**
+	 * 
+	 * @param id
+	 * @param id_kliento
+	 * @param id_anketos
+	 * @param kliento_vardas
+	 * @param kliento_pavarde
+	 * @param saugoti
+	 * @param model
+	 * @return
+	 */
+	
+	@RequestMapping(path="/klientai-anketa", method={ RequestMethod.GET, RequestMethod.POST })
+	public String klientaiAnketa(
+			// id	id_gaminio	id_zaliavos	kiekis_zaliavos	kiekis_gaminiu	
+			  @RequestParam(name="id", required=false, defaultValue="0") String id
+			, @RequestParam(name="id_kliento", required=false, defaultValue="-") String id_kliento	
+			, @RequestParam(name="id_anketos", required=false, defaultValue="0") String id_anketos
+			, @RequestParam(name="kliento_vardas", required=false, defaultValue="") String kliento_vardas	
+			, @RequestParam(name="kliento_pavarde", required=false, defaultValue="2") String kliento_pavarde	
+			, @RequestParam(name="saugoti", required=false, defaultValue="nesaugoti") String saugoti
+			, Model model
+			) {
+		
+		if ( ( saugoti != null ) && saugoti.equals ("saugoti") ) {
+			
+			KlientaiAnketa kliento_anketa = new KlientaiAnketa (
+					id
+					, id_kliento	
+					, id_anketos
+					, kliento_vardas
+					, kliento_pavarde
+			);
+
+			klientai_anketa_repository.save( kliento_anketa );
+		}
+		
+		Iterable<KlientaiAnketa> lst_klientai_anketa = klientai_anketa_repository.findAll();
+		
+		model.addAttribute("klientai_anketa", lst_klientai_anketa );
+		
+		return "klientai-anketa";
+	}	
+	
+	/**
+	 * 
+	 * @param id
+	 * @param model
+	 * @return
+	 */
+	
+	@RequestMapping(path="/klientas", method={ RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody Klientai klientas(@RequestParam(name="id", required=true, defaultValue="0") Integer id, Model model) {
+		
+		Klientai klientas = new Klientai();
+		
+		if ( id > 0 ) {
+			
+			klientas = klientai_repository.findById( id ).get();
+		}
+
+		return klientas;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	
+	@RequestMapping(path="/anketa", method={ RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody Iterable<Anketa> anketa(/* @RequestParam(name="id", required=true, defaultValue="0") Integer id, Model model */) {
+		
+		return anketa_repository.findAll();
+	}
+	
+	
+	@RequestMapping(path="/salinti-klienta", method={ RequestMethod.GET, RequestMethod.POST })
+	public @ResponseBody String salintiZaliava(@RequestParam(name="id", required=true, defaultValue="0") Integer id, Model model) {
+		
+		String res = "0";
+		
+		if ( id > 0 ) {
+			
+			klientai_repository. deleteById(id);
+			
+			if ( ! klientai_repository.existsById( id ) ) {
+			
+				res = "1";
+			}			
+		}
+		
+		return res;
+	}	
 	private void rasomIFailaKlientai (
 			String id,
 			String vardas,

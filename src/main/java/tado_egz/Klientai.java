@@ -20,11 +20,15 @@ public class Klientai {
     private String pavarde;
     private Integer gimimoData;
     private Integer telefonoNumeris;	
-  
+  /*
     @OneToMany
 	@JoinColumn(name = "idKliento", referencedColumnName = "id",insertable=false, updatable=false) 
-	private List<KlientaiApklausa> klientaiApklausa;
-	
+	private List<KlientaiAnketa> klientaiApklausa;
+	*/
+    
+    @Transient
+	private ArrayList<String> errors;   
+    
 	public Klientai() {
 		
 	}
@@ -40,6 +44,33 @@ public class Klientai {
 	
 	public Klientai(String id, String vardas, String pavarde, String gimimo_data, String telefono_numeris) {
 		
+		this.errors = new ArrayList<String>();
+		
+		try {
+				this.id = null;
+			
+				if ( id != null ) {
+		
+					this.id = Integer.parseInt ( id );
+					
+					if ( this.id == 0 ) {
+						
+						this.id = null;
+					}
+				}
+				this.vardas = vardas;
+				this.pavarde = pavarde;		
+				this.gimimoData = Integer.parseInt ( gimimo_data );
+				this.telefonoNumeris = Integer.parseInt (telefono_numeris );
+		
+		} catch ( Exception e ) {
+			
+			this.errors.add( e.getMessage() );
+		}
+		this.vardas = vardas;
+		this.pavarde = pavarde;
+		this.gimimoData = gimimoData;
+		this.telefonoNumeris = telefonoNumeris;
 	}
 
 	public Integer getId() {
@@ -81,15 +112,23 @@ public class Klientai {
 	public void setTelefonoNumeris(Integer telefonoNumeris) {
 		this.telefonoNumeris = telefonoNumeris;
 	}
-
-	public List<KlientaiApklausa> getKlientaiApklausa() {
+/*
+	public List<KlientaiAnketa> getKlientaiApklausa() {
 		return klientaiApklausa;
 	}
 
-	public void setKlientai_apklausa(List<KlientaiApklausa> klientaiApklausa) {
+	public void setKlientai_apklausa(List<KlientaiAnketa> klientaiApklausa) {
 		this.klientaiApklausa = klientaiApklausa;
 	}
+*/
+	public ArrayList<String> getErrors() {
+		return errors;
+	}
 
+	public void setErrors(ArrayList<String> errors) {
+		this.errors = errors;
+	}   
+	
 	@Override
 	public String toString() {
 		return "Klientai [id=" + id + ", vardas=" + vardas + ", pavarde=" + pavarde + ", gimimoData=" + gimimoData
