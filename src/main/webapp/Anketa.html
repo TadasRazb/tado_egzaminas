@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Anketos lentele</title>
+<link rel="stylesheet" href="main.css">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="main.js"></script>
+<script>
+$( function() {
+    var dialog, form,
+     	   
+      anketosData = $( "#anketosData" ),
+      paslaugosVertinimas = $( "#paslaugosVertinimas" ),
+      imonesVertinimas = $( "#imonesVertinimas" ),
+      allFields = $( [] ).add( anketos_data ).add( paslaugos_vertinimas ).add( imones_vertinimas ),
+      tips = $( ".validateTips" );
+    function pridetiAnketa() {
+        
+        var valid = true;
+        allFields.removeClass( "ui-state-error" );
+        valid = valid && checkLength( tips, anketos_data, "Anketos pildymo data", 8, 10 );
+        valid = valid && checkLength( tips, paslaugos_vertinimas, "Paslaugos vertinimas", 1, 10);
+        valid = valid && checkLength( tips, imones_vertinimas, "Imones darbo vertinimas", 1, 10 );   
+        
+   	    valid = valid && checkRegexp( tips, anketos_data, /^([0-9.eE+-])+$/, "datoje gali būti : 0-9 . eE+-" );
+        valid = valid && checkRegexp( paslaugos_vertinimas, /^([0-9.])+$/, "vertinime gali būti : 0-9 ." );   
+        valid = valid && checkRegexp( tips, imones_vertinimas, /^([0-9.eE+-])+$/, "vertinime gali būti : 0-9 . eE+-" );
+   
+        if ( valid ) {
+        
+        	form.submit();
+          dialog.dialog( "close" );
+        }
+        return valid;
+      }
+   
+      dialog = $( "#data_form" ).dialog({
+        autoOpen: false,
+        height: 500,
+        width: 450,
+        modal: true,
+        buttons: {
+          "Saugoti": pridetiAnketa,
+          Cancel: function() {
+            dialog.dialog( "close" );
+          }
+        },
+        close: function() {
+          form[ 0 ].reset();
+          allFields.removeClass( "ui-state-error" );
+        }
+      });
+   
+      form = dialog.find( "form" );
+   
+      $( "#kliento-dialogas" ).button().on( "click", function() {
+        dialog.dialog( "open" );
+      });
+      
+      $( ".keisti_anketa" ).each ( function() {
+      
+      	$( this ).click( function() {
+      
+      		id = $( this ).data( 'id' );
+      		
+      		$( '#id' ).val ( id );
+      		
+      		$.ajax({
+  		 		 url: '/anketa?id=' + id
+  		 
+  			}).done( function( anketa ) {
+      		
+  	    		$( '#anketos_data' ).val ( anketa.anketos_data );
+  				$( '#paslaugos_vertinimas' ).val( anketa.paslaugos_vertinimas ); 
+  				$( '#imones_vertinimas' ).val( anketa.imones_vertinimas );	
+  	    		
+  	    		dialog.dialog( "open" );
+      		});
+      	});
+      });
+      
+       dialog_msg = $( "#dialog-message" ).dialog({
+        autoOpen: false,     
+        modal: true,
+        buttons: {
+          Gerai: function() {
+            $( this ).dialog( "close" );
+            location.reload();
+          }
+        }
+      });
+      
+         dialog_del  = $( "#dialog-confirm" ).dialog({
+     
+  	      autoOpen: false,   
+  	      resizable: false,
+  	      height: "auto",
+  	      width: 400,
+  	      modal: true,
+  	      buttons: {
+  	        "Šalinti įrašą": function() {
+  	        
+  		        $.ajax({
+  			 		 url: '/salinti-anketa?id=' + id
+  			 
+  				}).done( function( data ) {
+  				
+  					if ( data == "1" ) {
+  					
+  						$( '#del_res' ).html ( 'nurodytas įrašas pašalintas' );
+  						dialog_msg.dialog( "open" );
+  						
+  					} else {
+
+  						$( '#del_res' ).html ( 'įrašo pašalinti nepavyko' );
+  						dialog_msg.dialog( "open" );					
+  	        		}
+  	          		$( this ).dialog( "close" );
+  	          	});
+  	        },
+  	        "Atšaukti": function() {
+  	          $( this ).dialog( "close" );
+  	        }
+  	      }
+  	   });    
+      
+      $( '.salinti_anketa' ).each ( function() {
+      
+      	$( this ).click( function() {
+      
+      		id = $( this ).data( 'id' );
+      		
+      		$( '#inf_id' ).html ( id );
+      
+       		$.ajax({
+  		 		 url: '/anketa?id=' + id
+  		 
+  			}).done( function( anketa ) {
+      		
+  	    		$( '#inf_anketos_data' ).html ( anketa.anketos_data );
+  				$( '#inf_paslaugos_vertinimas' ).html( anketa.paslaugos_vertinimas ); 
+  				$( '#inf_imones_vertinimas' ).html( anketa.imones_vertinimas );
+
+  	    		dialog_del.dialog( "open" );
+      		});   	
+      	});
+      });
+    });
+  </script>
+  </head>
+  <body>
+  <article>
+  	<h3>Anketa</h3>
+  	<nav>
+  		<a th:each="menu_item : ${lst_menu}" th:href="${menu_item.itemurl()}" th:text="${menu_item}"></a>
+  	</nav>	
+  	<table>
+  		<tr th:each="klaida : ${errors}">
+  			<td th:text="${klaida}">
+  			</td>
+  		</tr>
+  	</table>	
+  	<table>
+  		<tr>
+  			<th>
+  				id
+  			</th>
+  			<th>
+  				Anketos<br>data
+  			</th>
+  			<th>				
+  				Paslaugos<br>vertinimas
+  			</th>
+  			<th>				
+  				Imones<br>vertinimas
+  			</th>
+  			<th>
+  				Veiksmai<br>
+  				<button id="anketa-dialogas">Naujas</button>
+  			</th>
+  		</tr>
+  		<tr th:each="anketa : ${anketa}">
+  			<td th:text="${anketa.getId()}"></td>
+  			<td th:text="${anketa.getAnketos_data()}"></td>
+  			<td th:text="${anketa.getPaslaugos_verinimas()}"></td>
+  			<td th:text="${anketa.getImones_vertinimas()}"></td>
+  			<td>
+  				<button class="keisti_anketa ui-button ui-corner-all ui-widget" th:data-id="${anketa.getId()}">Keisti</button>
+  				<button class="salinti_anketa ui-button ui-corner-all ui-widget" th:data-id="${anketa.getId()}">Šalinti</button>				
+  			</td>									
+  		</tr>					
+  		</tr>
+  	</table>
+  	</article>
+  	<div id="data_form" title="Anketos duomenys">
+  		<p class="validateTips">All form fields are required.</p>	
+  		<form action="" method="POST">
+  			<fieldset>
+  			<label for="anketos_data">Anketos data</label>
+  			<input type="text" name="anketos_data" id="anketos_data" value="">	
+  			
+  			<label for="paslaugos_verinimas">Paslaugos verinimas</label>
+  			<input type="text" name="paslaugos_verinimas" id="paslaugos_verinimas" value="">			
+  			
+  			<label for="imones_vertinimas">Imones vertinimas</label>	
+  			<input type="text" name="imones_vertinimas" id="imones_vertinimas" value="1000">
+  			
+  			<input type="hidden" name="id" id="id" value="0">
+  				
+  			<input type="hidden" name="saugoti" value="saugoti">
+  			</fieldset>
+  		</form>
+  	</div>
+  	<div id="dialog-confirm" title="Įrašo šalinimas?">
+    	<p>
+    		<span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>
+    		<fieldset>
+  			<label class="inf">Vardas</label>
+  			<span class="inp_field" id="inf_vardas"></span>	
+  			
+  			<label class="inf">Pavarde</label>
+  			<span  class="inp_field" id="inf_vnt_pavarde"></span>			
+  			
+  			<label class="inf">Gimimo data</label>	
+  			<span  class="inp_field" id="inf_gimimo_data"></span>
+  			
+  			<label class="inf">Telefono numeris</label> 
+  			<span  class="inp_field" id="inf_telefono_numeris"></span>
+  		</fieldset>
+    		Ar tikrai norite pašalinti šį įrašą nr. <span id="inf_id"></span>?
+    	</p>
+  	</div>
+  	
+  	<div id="dialog-message" title="įrašas paįalintas">
+  	  <p>
+  	    <span class="ui-icon ui-icon-circle-check" style="float:left; margin:0 7px 50px 0;"></span>
+  	    <span id="del_res"></span>
+  	  </p>
+  	</div>	
+  </body>
+  </html>
+</script>
+</head>
+<body>
+
+</body>
+</html>
